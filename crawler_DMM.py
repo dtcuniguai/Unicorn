@@ -40,11 +40,13 @@ def actressParser(data,actresses) :
 
 def crawler_DMM(path) :
     data = {}
+    data['website'] = 'DMM.com'
     r = requests.get(path)
 
     if r.status_code == requests.codes.ok:
         soup = BeautifulSoup(r.text, 'html.parser')
-        t = soup.find('table',class_='mg-b20').find_all('td', {'width':'100%'})
+        t = soup.find('table',class_='mg-b20').find_all('td')
+        data['title'] = str(soup.find('h1').get_text())
         for s in t :
             if s.span!=None :    # actress
                 data = actressParser(data,s.span.find_all('a'))
@@ -52,9 +54,12 @@ def crawler_DMM(path) :
                 data = urlParser(data,s)
             elif is_date(s.get_text()):   # time
                 data['release'] = s.get_text()
+            elif(re.search(r'品番：',s.get_text())):
+                data['number'] = s.find_next().get_text()
             else :
                 pass
         print(data)
+
 
 
 crawler_DMM('http://www.dmm.co.jp/mono/dvd/-/detail/=/cid=118abp139/')
